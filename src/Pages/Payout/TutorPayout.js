@@ -33,11 +33,17 @@ export const TutorPayout = () => {
     }, []);
 
     const handleCheckboxChange = (teacherId) => {
-        setSelectedTeachers((prev) =>
-            prev.includes(teacherId)
-                ? prev.filter((id) => id !== teacherId)
-                : [...prev, teacherId]
-        );
+        if(teacherId === 'All Tutors'){
+            setSelectedTeachers((prev) =>
+                prev.length === payouts.length ? [] : payouts.map((payout) => payout.id)
+            );
+        }else{
+            setSelectedTeachers((prev) =>
+                prev.includes(teacherId)
+                    ? prev.filter((id) => id !== teacherId)
+                    : [...prev, teacherId]
+            );
+        }
     };
 
     const handleSubmit = async () => {
@@ -72,18 +78,18 @@ export const TutorPayout = () => {
     const exportToExcel = async () => {
         const ws = XLSX.utils.json_to_sheet(payoutData.map(data => ({
             'Teacher Name': `${data.first_name} ${data.last_name}`,
-             'Teacher Email': data.teacher_email,
+            'Teacher Email': data.teacher_email,
             'Total Hours': data.session_total_time,
-             'Account Name': data.account_name,
-             'Account Number': data.account_number,
-              'ABN': data.abn,
-               'BSB': data.bsb,
+            'Account Name': data.account_name,
+            'Account Number': data.account_number,
+            'ABN': data.abn,
+            'BSB': data.bsb,
             'Booking IDs': data.data.map(d => d.booking_id).join(", "),
             'Amount to be Paid': data.total_amount,
         })));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Payout Data');
-      
+
         XLSX.writeFile(wb, `${payoutData[0].first_name}_${payoutData[0].last_name}_payout_data.xlsx`);
         try {
             const requestData = {
@@ -112,7 +118,7 @@ export const TutorPayout = () => {
 
     const exportToPDF = () => {
         const doc = new jsPDF();
-        const tableColumn = ["Teacher Name","Email", "Total Hours", "Bank Details", "Booking IDs", "Amount to be Paid",'Account Name', 'Account Number', 'ABN', 'BSB'];
+        const tableColumn = ["Teacher Name", "Email", "Total Hours", "Bank Details", "Booking IDs", "Amount to be Paid", 'Account Name', 'Account Number', 'ABN', 'BSB'];
         const tableRows = [];
 
         payoutData.forEach(data => {
@@ -162,6 +168,20 @@ export const TutorPayout = () => {
                         </button>
                         {dropdownOpen && (
                             <div className="absolute border bg-white shadow mt-2 max-h-40 overflow-y-auto">
+                                {payouts.length>0 &&<label
+                                    className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-md hover:bg-gray-200 cursor-pointer"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="cursor-pointer"
+                                        value="All Tutors"
+                                        // checked={selectedTeachers.includes(tutor.id)}
+                                        onChange={() => handleCheckboxChange('All Tutors')}
+                                    />
+                                    <span>
+                                        All tutors
+                                    </span>
+                                </label>}
                                 {payouts.map((tutor) => (
                                     <label
                                         key={tutor.id}
@@ -184,7 +204,7 @@ export const TutorPayout = () => {
                     </div>
                 </div>
                 <div className="mb-4 w-full md:w-1/6 px-2">
-                    <label className="block font-medium mb-2">Start Date:</label>
+                    <label className="block font-medium mb-2">Session Start Date:</label>
                     <input
                         type="date"
                         className="border p-2 w-full"
@@ -193,7 +213,7 @@ export const TutorPayout = () => {
                     />
                 </div>
                 <div className="mb-4 w-full md:w-1/6 px-2">
-                    <label className="block font-medium mb-2">End Date:</label>
+                    <label className="block font-medium mb-2">Session End Date:</label>
                     <input
                         type="date"
                         className="border p-2 w-full"
@@ -202,7 +222,7 @@ export const TutorPayout = () => {
                     />
                 </div>
                 <div className="mb-4 w-full md:w-1/6 px-2">
-                    <label className="block font-medium mb-2">Start Time:</label>
+                    <label className="block font-medium mb-2">Session Start Time:</label>
                     <input
                         type="time"
                         className="border p-2 w-full"
@@ -211,7 +231,7 @@ export const TutorPayout = () => {
                     />
                 </div>
                 <div className="mb-4 w-full md:w-1/6 px-2">
-                    <label className="block font-medium mb-2">End Time:</label>
+                    <label className="block font-medium mb-2">Session End Time:</label>
                     <input
                         type="time"
                         className="border p-2 w-full"
@@ -253,7 +273,7 @@ export const TutorPayout = () => {
                         {/* Buttons for downloading CSV or Excel */}
                         <div className="mb-4 flex gap-2">
                             <Button variant="contained" color="primary" sx={{ mr: 1 }} onClick={exportToExcel}>
-                            Download(Excel)
+                                Download(Excel)
                             </Button>
                             <Button variant="contained" color="primary" sx={{ mr: 1 }} onClick={exportToPDF}>
                                 Download(PDF)

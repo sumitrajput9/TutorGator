@@ -454,13 +454,14 @@ export function NotificationTemplate() {
                           color="secondary"
                           size="small"
                           onClick={() => handleEdit(event)}
-                          style={{ marginRight: "8px" }}
+                          style={{ marginRight: "8px",backgroundColor:"#2C8E71" }}
                         >
                           Edit
                         </Button>
                         <Button
                           variant="contained"
                           color="error"
+                          style={{backgroundColor:"#D6B57F"}}
                           size="small"
                           onClick={() => handleDelete(event.id)}
                         >

@@ -40,10 +40,10 @@ export default function Dashboard() {
           <Route path='/tutor/login-as' element={<TutorLoginAs />} /> 
           <Route path='/client/login-as' element={<ClientLoginAs/>}/>
           <Route path='/client/invoice' element={<ClientInvoice/>}/>
-          <Route path='/tutor/tutor-report' element={<TutorReport/>}/>
-          <Route path='/tutor/report' element={<Report />} />
+          {/* <Route path='/tutor/tutor-report' element={<TutorReport/>}/> */}
+          <Route path='/tutor/report' element={<TutorReport />} />
           <Route path='/tutor/session-report' element={<SessionReport/>}/>
-          <Route path='/client/report' element={<Reports/>}/>
+          <Route path='/client/report' element={<ClientReport/>}/>
           <Route path='/client/client-report' element={<ClientReport/>}/>
           <Route path='/client/session-report' element={<ClientSessionReport/>}/>
 

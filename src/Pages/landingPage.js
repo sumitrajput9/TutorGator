@@ -20,14 +20,14 @@ function LandingPage() {
         <div className="flex flex-col gap-4">
           <button
             onClick={() => handleNavigation("Tutor")}
-            className="py-3 px-6 bg-blue-500 text-white rounded-md font-medium hover:bg-blue-600 transition"
+            className="py-3 px-6 bg-blue-500 text-white rounded-md font-medium hover:bg-[#2C8E71] transition"
           >
           Tutor
           </button>
 
           <button
             onClick={() => handleNavigation("Tutor")}
-            className="py-3 px-6 bg-blue-500 text-white rounded-md font-medium hover:bg-blue-600 transition"
+            className="py-3 px-6 bg-blue-500 text-white rounded-md font-medium hover:bg-[#2C8E71] transition"
           >
            Client
           </button>

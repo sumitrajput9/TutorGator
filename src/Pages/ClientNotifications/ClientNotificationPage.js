@@ -224,7 +224,7 @@ export function ClientNotificationPages() {
                           color="secondary"
                           size="small"
                           onClick={() => handleEdit(event)}
-                          style={{ marginRight: "8px" }}
+                          style={{ marginRight: "8px",backgroundColor:"#2C8E71"  }}
                         >
                           Edit
                         </Button>

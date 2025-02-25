@@ -1,34 +1,29 @@
-import { useState } from "react"
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
-import { Link, useNavigate } from "react-router-dom"
-import { login } from "../Services/apIServices"
-
-function LoginForm() {
-    const navigate = useNavigate()
+import { useState } from "react";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import assest1 from "../Images/assest1.jpg"; // Ensure correct path
+import { login } from "../Services/apIServices";
+import { useNavigate } from "react-router";
+export default function AdminLoginPage() {
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: "",
         password: "",
-    })
+    });
 
-    const [showPassword, setShowPassword] = useState(false)
-
-    const { email, password } = formData
+    const navigate = useNavigate();
 
     const handleOnChange = (e) => {
-        setFormData((prevData) => ({
-            ...prevData,
-            [e.target.name]: e.target.value,
-        }))
-    }
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleOnSubmit = async (e) => {
         e.preventDefault();
         try {
-            const data = await login(email, password);
+            const data = await login(formData.email, formData.password);
             console.log('Login successful:', data);
 
             if (data.success) {
-                localStorage.setItem('token',data?.data?.remember_token)
+                localStorage.setItem('token', data?.data?.remember_token)
                 navigate('/dashboard/profile-approval');
             }
         } catch (error) {
@@ -36,72 +31,83 @@ function LoginForm() {
             // Handle error feedback to the user if necessary
         }
     };
-
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100">
-            <form
-                onSubmit={handleOnSubmit}
-                className="w-full max-w-md p-8 bg-white rounded-lg shadow-md"
-            >
-                <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-                    Sign In
-                </h2>
+        <div className="min-h-screen flex items-center justify-center bg-[#2C8E71] px-4">
+            <div className="flex flex-col md:flex-row items-center bg-white shadow-xl rounded-2xl overflow-hidden w-full max-w-4xl border border-gray-200">
 
-                <label className="w-full">
-                    <p className="mb-1 text-sm text-gray-700">
-                        Email Address <sup className="text-red-500">*</sup>
-                    </p>
-                    <input
-                        required
-                        type="text"
-                        name="email"
-                        value={email}
-                        onChange={handleOnChange}
-                        placeholder="Enter email address"
-                        className="w-full px-4 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring focus:ring-blue-300"
+                {/* Left Side - Image Section */}
+                <div className="hidden md:block w-1/2 bg-[#D6B57F]">
+                    <img
+                        src={assest1}
+                        alt="Admin Illustration"
+                        className="w-full h-full object-cover rounded-l-2xl"
                     />
-                </label>
+                </div>
 
-                <label className="relative w-full mt-4">
-                    <p className="mb-1 text-sm text-gray-700 mt-2">
-                        Password <sup className="text-red-500">*</sup>
+                {/* Right Side - Login Form */}
+                <div className="w-full md:w-1/2 p-10 bg-[#E0E0E0]">
+                    <h2 className="text-3xl font-bold text-center mb-3">
+                        <span className="text-black">Tutor</span>
+                        <span className="text-[#2C8E71]">Gator</span>
+                    </h2>
+
+                    <p className="text-sm text-gray-600 text-center mb-6">
+                        Access the admin dashboard
                     </p>
-                    <input
-                        required
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={password}
-                        onChange={handleOnChange}
-                        placeholder="Enter Password"
-                        className="w-full px-4 py-2 border rounded-md pr-10 text-gray-700 focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                    {/* <span
-            onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-9 cursor-pointer text-gray-500"
-          >
-            {showPassword ? (
-              <AiOutlineEyeInvisible fontSize={24} />
-            ) : (
-              <AiOutlineEye fontSize={24} />
-            )}
-          </span> */}
-                </label>
 
-                {/* <Link to="/forgot-password">
-          <p className="mt-2 text-xs text-right text-blue-500">
-            Forgot Password?
-          </p>
-        </Link> */}
+                    <form onSubmit={handleOnSubmit} className="space-y-5">
+                        {/* Email Input */}
+                        <div>
+                            <label className="block text-gray-700 font-medium mb-1">
+                                Email Address <sup className="text-red-500">*</sup>
+                            </label>
+                            <input
+                                required
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleOnChange}
+                                placeholder="Enter admin email"
+                                className="w-full px-4 py-3 border border-gray-400 rounded-md shadow-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#2C8E71]"
+                            />
+                        </div>
 
-                <button
-                    type="submit"
-                    className="mt-6 w-full py-2 bg-yellow-500 text-white rounded-md font-medium hover:bg-yellow-600 transition"
-                >
-                    Sign In
-                </button>
-            </form>
+                        {/* Password Input with Eye Icon */}
+                        <div className="relative">
+                            <label className="block text-gray-700 font-medium mb-1">
+                                Password <sup className="text-red-500">*</sup>
+                            </label>
+                            <input
+                                required
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                value={formData.password}
+                                onChange={handleOnChange}
+                                placeholder="Enter your password"
+                                className="w-full px-4 py-3 border border-gray-400 rounded-md shadow-sm text-gray-700 bg-white pr-12 focus:outline-none focus:ring-2 focus:ring-[#2C8E71]"
+                            />
+                            <span
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="absolute right-4 top-10 cursor-pointer text-gray-600"
+                            >
+                                {showPassword ? (
+                                    <AiOutlineEyeInvisible size={22} />
+                                ) : (
+                                    <AiOutlineEye size={22} />
+                                )}
+                            </span>
+                        </div>
+
+                        {/* Sign In Button */}
+                        <button
+                            type="submit"
+                            className="w-full py-3 bg-[#2C8E71] text-white font-semibold rounded-md shadow-md hover:bg-[#1f7058] transition duration-300"
+                        >
+                            Sign In
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-    )
+    );
 }
-
-export default LoginForm

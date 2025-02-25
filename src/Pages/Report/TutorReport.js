@@ -14,8 +14,10 @@ export const TutorReport = () => {
   const [loading, setLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [payoutData, setPayoutData] = useState([]);
+  const [tutors, setTutors] = useState([]);
   const token = localStorage.getItem("token");
-
+  const [status, setStatus] = useState('');
+  const [report, setReport] = useState('');
   // Fetch initial data
   useEffect(() => {
     const fetchPayouts = async () => {
@@ -30,8 +32,9 @@ export const TutorReport = () => {
           }
         );
         const filteredTutors = response.data.data.filter(
-          (tutor) => tutor.user_type === "teacher" && tutor.status === "active"
+          (tutor) => tutor.user_type === "teacher"
         );
+        setTutors(filteredTutors);
         setPayouts(filteredTutors);
       } catch (error) {
         console.error("Error fetching payouts:", error);
@@ -39,6 +42,7 @@ export const TutorReport = () => {
     };
     fetchPayouts();
   }, [token]);
+
 
   // Handle tutor selection
   const handleCheckboxChange = (teacherId) => {
@@ -52,92 +56,176 @@ export const TutorReport = () => {
   // Submit and fetch report data
   const handleSubmit = async () => {
     setLoading(true);
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-   let isAll =  selectedTeachers[0] === "All Tutors"?"All Tutors":''
-    let tutor = selectedTeachers.length > 0 ? selectedTeachers : "All Tutors"
-    const requestData = {
-      Tutors: selectedTeachers.length > 0 ? (selectedTeachers[0] === "All Tutors" ? "All Tutors" : selectedTeachers) : "All Tutors",
-      start_date: {
-        year: start.getFullYear(),
-        month: start.getMonth() + 1,
-        day: start.getDate(),
-      },
-      end_date: {
-        year: end.getFullYear(),
-        month: end.getMonth() + 1,
-        day: end.getDate(),
-      },
-    };
+    if (report === 'Tutor') {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      let isAll = selectedTeachers[0] === "All Tutors" ? "All Tutors" : ''
+      let tutor = selectedTeachers.length > 0 ? selectedTeachers : "All Tutors"
+      const requestData = {
+        Tutors: selectedTeachers.length > 0 ? (selectedTeachers[0] === "All Tutors" ? "All Tutors" : selectedTeachers) : "All Tutors",
+        start_date: {
+          year: start.getFullYear(),
+          month: start.getMonth() + 1,
+          day: start.getDate(),
+        },
+        end_date: {
+          year: end.getFullYear(),
+          month: end.getMonth() + 1,
+          day: end.getDate(),
+        },
+      };
 
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/get_tutors_report`,
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setPayoutData(response.data);
-      generateExcel(response.data,isAll);
-      // generatePDF(response.data); 
-    } catch (error) {
-      console.error("Error submitting payout data:", error);
-      toast.error("Failed to fetch payout data.");
-    } finally {
-      setLoading(false);
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/get_tutors_report`,
+          requestData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPayoutData(response.data);
+        generateExcel(response.data, isAll);
+        // generatePDF(response.data); 
+      } catch (error) {
+        console.error("Error submitting payout data:", error);
+        toast.error("Failed to fetch payout data.");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      let tutor = selectedTeachers.length > 0 ? selectedTeachers : "All Tutors"
+      let isAll = selectedTeachers[0] === "All Tutors" ? "All Tutors" : ''
+      const requestData = {
+        Tutors: selectedTeachers.length > 0 ? (selectedTeachers[0] === "All Tutors" ? "All Tutors" : selectedTeachers) : "All Tutors",
+        start_date: {
+          year: start.getFullYear(),
+          month: start.getMonth() + 1,
+          day: start.getDate(),
+        },
+        end_date: {
+          year: end.getFullYear(),
+          month: end.getMonth() + 1,
+          day: end.getDate(),
+        },
+      };
+
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/get_session_report`,
+          requestData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPayoutData(response.data);
+        generateSessionExcel(response.data, isAll);
+        // generatePDF(response.data); 
+      } catch (error) {
+        console.error("Error submitting payout data:", error);
+        toast.error("Failed to fetch payout data.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  
-  const handleReport= async () => {
+
+  const handleReport = async () => {
+
     setLoading(true);
+    if (report === 'Tutor') {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      let tutor = selectedTeachers.length > 0 ? selectedTeachers : "All Tutors"
+      let isAll = selectedTeachers[0] === "All Tutors" ? "All Tutors" : ''
+      const requestData = {
+        Tutors: selectedTeachers.length > 0 ? (selectedTeachers[0] === "All Tutors" ? "All Tutors" : selectedTeachers) : "All Tutors",
+        start_date: {
+          year: start.getFullYear(),
+          month: start.getMonth() + 1,
+          day: start.getDate(),
+        },
+        end_date: {
+          year: end.getFullYear(),
+          month: end.getMonth() + 1,
+          day: end.getDate(),
+        },
+      };
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    let tutor = selectedTeachers.length > 0 ? selectedTeachers : "All Tutors"
-    let isAll =  selectedTeachers[0] === "All Tutors"?"All Tutors":''
-    const requestData = {
-      Tutors: selectedTeachers.length > 0 ? (selectedTeachers[0] === "All Tutors" ? "All Tutors" : selectedTeachers) : "All Tutors",
-      start_date: {
-        year: start.getFullYear(),
-        month: start.getMonth() + 1,
-        day: start.getDate(),
-      },
-      end_date: {
-        year: end.getFullYear(),
-        month: end.getMonth() + 1,
-        day: end.getDate(),
-      },
-    };
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/get_tutors_report`,
+          requestData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPayoutData(response.data);
+        // generateExcel(response.data);
+        generatePDF(response.data, isAll);
+      } catch (error) {
+        console.error("Error submitting payout data:", error);
+        toast.error("Failed to fetch payout data.");
+      } finally {
+        setLoading(false);
+      }
 
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/get_tutors_report`,
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setPayoutData(response.data);
-      // generateExcel(response.data);
-      generatePDF(response.data,isAll); 
-    } catch (error) {
-      console.error("Error submitting payout data:", error);
-      toast.error("Failed to fetch payout data.");
-    } finally {
-      setLoading(false);
+    } else {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      let tutor = selectedTeachers.length > 0 ? selectedTeachers : "All Tutors"
+      let isAll = selectedTeachers[0] === "All Tutors" ? "All Tutors" : ''
+      const requestData = {
+        Tutors: selectedTeachers.length > 0 ? (selectedTeachers[0] === "All Tutors" ? "All Tutors" : selectedTeachers) : "All Tutors",
+        start_date: {
+          year: start.getFullYear(),
+          month: start.getMonth() + 1,
+          day: start.getDate(),
+        },
+        end_date: {
+          year: end.getFullYear(),
+          month: end.getMonth() + 1,
+          day: end.getDate(),
+        },
+      };
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/get_session_report`,
+          requestData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPayoutData(response.data);
+        // generateExcel(response.data);
+        generateSessionPDF(response.data, isAll);
+      } catch (error) {
+        console.error("Error submitting payout data:", error);
+        toast.error("Failed to fetch payout data.");
+      } finally {
+        setLoading(false);
+      }
+
+
     }
+
+
   };
 
   // Generate Excel dynamically
   // const generateExcel = (data) => {
   //   console.log(data.data.rows, "data");
-    
+
   //   const formattedData = data.data.rows.map((item) => {
   //     const flatData = { ...item };
 
@@ -165,10 +253,10 @@ export const TutorReport = () => {
   //   XLSX.writeFile(workbook, "TutorReports.xlsx");
   //   toast.success("Excel file generated!");
   // };
-   // Generate PDF dynamically
+  // Generate PDF dynamically
   // const generatePDF = (data) => {
   //   console.log(data.data.rows, "data");
-    
+
   //   const doc = new jsPDF();
   //   doc.text("Tutor Reports", 20, 10);
 
@@ -213,65 +301,27 @@ export const TutorReport = () => {
   //   doc.save("TutorReports.pdf");
   //   toast.success("PDF file generated!");
   // };
-  const generateExcel = (data, isAll) => {
-    console.log(data.data.rows, "data");
-    
-    const formattedData = data.data.rows.map((item) => {
-      const flatData = { ...item };
-  
-      // Dynamically flatten all objects and arrays in the item
-      Object.entries(item).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          value.forEach((subItem, index) => {
-            Object.entries(subItem).forEach(([subKey, subValue]) => {
-              flatData[`${key}_${index + 1}_${subKey}`] = subValue;
-            });
-          });
-        } else if (typeof value === "object" && value !== null) {
-          Object.entries(value).forEach(([subKey, subValue]) => {
-            flatData[`${key}_${subKey}`] = subValue;
-          });
-        }
-      });
-  
-      return flatData;
-    });
-  
-    // Create Excel workbook and worksheet
-    const worksheet = XLSX.utils.json_to_sheet(formattedData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Tutor Reports");
-  
-    // Set the file name based on whether "All" or a specific tutor is selected
-    const fileName = isAll ? "All_Tutor_Reports.xlsx" : `${data.data.rows[0].first_name+' '+data.data.rows[0].last_name}_Report.xlsx`;
-  
-    // Save the Excel file
-    XLSX.writeFile(workbook, fileName);
-    toast.success("Excel file generated!");
-  };
-  
 
- 
-  const generatePDF = (data, isAll) => {
-    console.log(isAll, "data");
-    
+
+  const generateSessionPDF = (data, isAll) => {
+
     const doc = new jsPDF();
-    doc.text("Tutor Reports", 20, 10);
-  
-    data.data.rows.forEach((item, index) => {
+    doc.text("Tutor Session Reports", 20, 10);
+
+    data.data.forEach((item, index) => {
       doc.text(`Report ${index + 1}`, 20, 20 + index * 10);
-  
+
       // Add general data
       const generalData = Object.entries(item).filter(([key, value]) => {
         return typeof value !== "object";
       });
-  
+
       doc.autoTable({
         head: [["Field", "Value"]],
         body: generalData,
         startY: doc.autoTable.previous ? doc.autoTable.previous.finalY + 10 : 30,
       });
-  
+
       // Add nested sections dynamically
       Object.entries(item).forEach(([key, value]) => {
         if (Array.isArray(value)) {
@@ -295,13 +345,151 @@ export const TutorReport = () => {
         }
       });
     });
-  
+
     // Set the file name based on whether "All" or a specific tutor is selected
-    const fileName = isAll ? "All_Tutor_Reports.pdf" : `${data.data.rows[0].first_name +''+data.data.rows[0].last_name}_Report.pdf`;
+    const fileName = isAll ? "All_Tutor_Session_Report.pdf" : `${data.data[0].booking_details.first_name + '' + data.data[0].booking_details.last_name}_Session_Report.pdf`;
     doc.save(fileName);
     toast.success("PDF file generated!");
   };
-  
+
+
+  const generateExcel = (data, isAll) => {
+    const formattedData = data.data.rows.map((item) => {
+      const flatData = { ...item };
+
+      // Dynamically flatten all objects and arrays in the item
+      Object.entries(item).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((subItem, index) => {
+            Object.entries(subItem).forEach(([subKey, subValue]) => {
+              flatData[`${key}_${index + 1}_${subKey}`] = subValue;
+            });
+          });
+        } else if (typeof value === "object" && value !== null) {
+          Object.entries(value).forEach(([subKey, subValue]) => {
+            flatData[`${key}_${subKey}`] = subValue;
+          });
+        }
+      });
+
+      return flatData;
+    });
+
+    // Create Excel workbook and worksheet
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tutor Reports");
+
+    // Set the file name based on whether "All" or a specific tutor is selected
+    const fileName = isAll ? "All_Tutor_Reports.xlsx" : `${data.data.rows[0].first_name + ' ' + data.data.rows[0].last_name}_Report.xlsx`;
+
+    // Save the Excel file
+    XLSX.writeFile(workbook, fileName);
+    toast.success("Excel file generated!");
+  };
+
+
+
+  const generateSessionExcel = (data, isAll) => {
+    const formattedData = data.data.map((item) => {
+      const flatData = { ...item };
+
+      // Dynamically flatten all objects and arrays in the item
+      Object.entries(item).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((subItem, index) => {
+            Object.entries(subItem).forEach(([subKey, subValue]) => {
+              flatData[`${key}_${index + 1}_${subKey}`] = subValue;
+            });
+          });
+        } else if (typeof value === "object" && value !== null) {
+          Object.entries(value).forEach(([subKey, subValue]) => {
+            flatData[`${key}_${subKey}`] = subValue;
+          });
+        }
+      });
+
+      return flatData;
+    });
+
+    // Create Excel workbook and worksheet
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tutor Reports");
+
+    // Set the file name based on whether "All" or a specific tutor is selected
+    const fileName = isAll ? "All_Tutor_Reports.xlsx" : `${data.data[0].booking_details.first_name + ' ' + data.data[0].booking_details.last_name}_Report.xlsx`;
+
+    // Save the Excel file
+    XLSX.writeFile(workbook, fileName);
+    toast.success("Excel file generated!");
+  };
+
+
+
+  const generatePDF = (data, isAll) => {
+
+    const doc = new jsPDF();
+    doc.text("Tutor Reports", 20, 10);
+
+    data.data.rows.forEach((item, index) => {
+      doc.text(`Report ${index + 1}`, 20, 20 + index * 10);
+
+      // Add general data
+      const generalData = Object.entries(item).filter(([key, value]) => {
+        return typeof value !== "object";
+      });
+
+      doc.autoTable({
+        head: [["Field", "Value"]],
+        body: generalData,
+        startY: doc.autoTable.previous ? doc.autoTable.previous.finalY + 10 : 30,
+      });
+
+      // Add nested sections dynamically
+      Object.entries(item).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((subItem, subIndex) => {
+            doc.text(`${key.toUpperCase()} - Entry ${subIndex + 1}`, 20, doc.autoTable.previous.finalY + 10);
+            const subTableData = Object.entries(subItem).map(([subKey, subValue]) => [subKey, subValue]);
+            doc.autoTable({
+              head: [["Field", "Value"]],
+              body: subTableData,
+              startY: doc.autoTable.previous.finalY + 10,
+            });
+          });
+        } else if (typeof value === "object" && value !== null) {
+          doc.text(`${key.toUpperCase()}`, 20, doc.autoTable.previous.finalY + 10);
+          const nestedData = Object.entries(value).map(([subKey, subValue]) => [subKey, subValue]);
+          doc.autoTable({
+            head: [["Field", "Value"]],
+            body: nestedData,
+            startY: doc.autoTable.previous.finalY + 10,
+          });
+        }
+      });
+    });
+
+    // Set the file name based on whether "All" or a specific tutor is selected
+    const fileName = isAll ? "All_Tutor_Reports.pdf" : `${data.data.rows[0].first_name + '' + data.data.rows[0].last_name}_Report.pdf`;
+    doc.save(fileName);
+    toast.success("PDF file generated!");
+  };
+
+
+
+  const handleSelect = (e) => {
+    setStatus(e.target.value);
+  }
+  const statusOptions = ['profile incomplete', 'pending activation', 'suspended', 'active', 'Deactivated'];
+  useEffect(() => {
+    if (status) {
+      const filteredByStatus = tutors.filter(tutor => tutor.status === status);
+      setPayouts(filteredByStatus);
+    } else {
+      setPayouts(tutors);
+    }
+  }, [payoutData, status]);
 
   // Reset data
   const cancelPayData = () => {
@@ -318,6 +506,41 @@ export const TutorReport = () => {
       </header>
       <div className="flex flex-wrap p-4">
         <div className="mb-4 w-full md:w-1/6 px-2">
+          <label htmlFor="statusSelect" className="block mb-2">Select Report:</label>
+          <select
+            id="statusSelect"
+            value={report}
+            onChange={(e) => setReport(e.target.value)}
+            className="border p-2"
+          >
+            <option value="">--Select Status--</option>
+            <option key='Tutor' value='Tutor'>
+              Tutor Report
+            </option>
+            <option key='Session' value='Session'>
+              Session Report
+            </option>
+          </select>
+        </div>
+
+        <div className="mb-4 w-full md:w-1/6 px-2">
+          <label htmlFor="statusSelect" className="block mb-2">Select Status:</label>
+          <select
+            id="statusSelect"
+            value={status}
+            onChange={handleSelect}
+            className="border p-2"
+          >
+            <option value="">--Select Status--</option>
+            {statusOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mb-4 w-full md:w-1/6 px-2">
           <label className="block font-medium mb-2">Select Tutors:</label>
           <div className="relative">
             <button
@@ -332,19 +555,19 @@ export const TutorReport = () => {
             {dropdownOpen && (
               <div className="absolute border bg-white shadow mt-2 max-h-40 overflow-y-auto">
                 <label
-                    className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-md hover:bg-gray-200 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      className="cursor-pointer"
-                      value="All Tutors"
-                      // checked={selectedTeachers.includes(tutor.id)}
-                      onChange={() => handleCheckboxChange('All Tutors')}
-                    />
-                    <span>
-                       All tutors
-                    </span>
-                  </label>
+                  className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded-md hover:bg-gray-200 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    className="cursor-pointer"
+                    value="All Tutors"
+                    // checked={selectedTeachers.includes(tutor.id)}
+                    onChange={() => handleCheckboxChange('All Tutors')}
+                  />
+                  <span>
+                    All tutors
+                  </span>
+                </label>
                 {payouts.map((tutor) => (
                   <label
                     key={tutor.id}
@@ -367,7 +590,7 @@ export const TutorReport = () => {
           </div>
         </div>
         <div className="mb-4 w-full md:w-1/6 px-2">
-          <label className="block font-medium mb-2">Start Date:</label>
+          <label className="block font-medium mb-2">Session Start Date:</label>
           <input
             type="date"
             className="border p-2 w-full"
@@ -376,7 +599,7 @@ export const TutorReport = () => {
           />
         </div>
         <div className="mb-4 w-full md:w-1/6 px-2">
-          <label className="block font-medium mb-2">End Date:</label>
+          <label className="block font-medium mb-2">Session End Date:</label>
           <input
             type="date"
             className="border p-2 w-full"
@@ -388,14 +611,14 @@ export const TutorReport = () => {
           <button
             className="bg-[#2C8E71] text-white px-4 py-2 rounded"
             onClick={handleReport}
-            // disabled={loading}
+          // disabled={loading}
           >
-           Report(Pdf) Download
+            Report(Pdf) Download
           </button>
           <button
             className="bg-[#2C8E71] text-white px-4 py-2 rounded"
             onClick={handleSubmit}
-            // disabled={loading}
+          // disabled={loading}
           >
             Report(Excel) Download
           </button>
