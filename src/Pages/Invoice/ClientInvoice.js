@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import { Download as DownloadIcon, Close as CloseIcon } from "@mui/icons-material";
 import axios from "axios";
-import { getInvoiceData, getInvoice } from "../../Services/apIServices";
+import { getInvoiceData, getInvoice, getSessionInvoiceData, getSessionInvoice } from "../../Services/apIServices";
 import { toast } from "react-toastify";
 
 export function ClientInvoice() {
@@ -34,6 +34,8 @@ export function ClientInvoice() {
     const [open, setOpen] = useState(false);
     const [selectedTutor, setSelectedTutor] = useState(null);
     const [bookingDetails, setBookingDetails] = useState([]);
+    const [invoiceDetails, setInvoiceDetails] = useState([]);
+    const [isSessionOpen, setIsSessIsOnOpen] = useState(false);
 
     const token = localStorage.getItem("token");
 
@@ -98,7 +100,37 @@ export function ClientInvoice() {
         }
     };
 
+
+    const handleClickSessionOpen = async (tutor) => {
+        // setSelectedTutor(tutor);
+        setIsSessIsOnOpen(true);
+        try {
+            const response = await getSessionInvoiceData(tutor);
+            console.log(response);
+            if (response) {
+                console.log(response.sessions);
+                setInvoiceDetails(response.sessions);
+            }
+        } catch (error) {
+            console.error("Error fetching invoice data:", error);
+        }
+    };
+
+
+
+
+
     const handleClose = () => {
+        setOpen(false);
+        setSelectedTutor(null);
+        setBookingDetails([]);
+        setIsSessIsOnOpen(false);
+        setInvoiceDetails([]);
+    };
+
+    const handleCloseSession = () => {
+
+        setIsSessIsOnOpen(false);
         setOpen(false);
         setSelectedTutor(null);
         setBookingDetails([]);
@@ -160,7 +192,7 @@ export function ClientInvoice() {
                             <TableCell><strong>Last Name</strong></TableCell>
                             <TableCell><strong>Email</strong></TableCell>
                             <TableCell><strong>Mobile</strong></TableCell>
-                            <TableCell><strong>Actions</strong></TableCell>
+                            <TableCell><strong>Invoice</strong></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -176,8 +208,10 @@ export function ClientInvoice() {
                                         sx={{ backgroundColor: "#2C8E71", color: "white", '&:hover': { backgroundColor: "#e0e0e0" } }}
                                         onClick={() => handleClickOpen(tutor)}
                                     >
-                                        Click
+                                        CLICK
                                     </Button>
+
+
 
                                 </TableCell>
                             </TableRow>
@@ -210,7 +244,7 @@ export function ClientInvoice() {
                                         <TableCell><strong>Booking ID</strong></TableCell>
                                         <TableCell><strong>Mobile</strong></TableCell>
                                         <TableCell><strong>Teacher</strong></TableCell>
-                                        <TableCell><strong>Location</strong></TableCell>
+                                        {/* <TableCell><strong>Location</strong></TableCell> */}
                                         <TableCell><strong>Sessions</strong></TableCell>
                                         <TableCell><strong>Amount</strong></TableCell>
                                         <TableCell><strong>Invoice</strong></TableCell>
@@ -227,15 +261,92 @@ export function ClientInvoice() {
                                                     return teacher ? `${teacher.first_name} ${teacher.last_name}` : "N/A";
                                                 })()}
                                             </TableCell>
-                                            <TableCell>{row.tutoring_location}</TableCell>
+                                            {/* <TableCell>{row.tutoring_location}</TableCell> */}
                                             <TableCell>{row.no_sesssion} ({row.session_duration} min)</TableCell>
                                             <TableCell>${row.total_amount}</TableCell>
+                                            <TableCell sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2 }}>
+                                                <Button
+                                                    sx={{ backgroundColor: "#2C8E71", color: "white", '&:hover': { backgroundColor: "#e0e0e0" } }}
+                                                    onClick={async () => {
+                                                        const data = await getInvoice(row.booking_id);
+                                                        window.open(data.data, '_blank');
+                                                    }}
+                                                >
+                                                    Booking
+                                                </Button>
+                                                <Button
+                                                    sx={{ backgroundColor: "#2C8E71", color: "white", '&:hover': { backgroundColor: "#e0e0e0" } }}
+                                                    onClick={() => handleClickSessionOpen(row.booking_id)}
+                                                >
+                                                    Session
+                                                </Button>
+                                            </TableCell>
+
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    ) : (
+                        <Typography variant="h6" align="center" sx={{ color: 'gray', padding: 2 }}>
+                            No booking details available.
+                        </Typography>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ justifyContent: 'center', padding: 2 }}>
+                    <Button onClick={handleClose} variant="outlined" color="secondary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+
+
+            <Dialog open={isSessionOpen} onClose={handleClose} maxWidth="md" fullWidth>
+                <DialogTitle sx={{ fontSize: 22, fontWeight: 'bold', textAlign: 'center', backgroundColor: '#2C8E71', color: 'white', padding: 2 }}>
+                    Session Details for {selectedTutor?.first_name} {selectedTutor?.last_name}
+                </DialogTitle>
+                <DialogContent sx={{ padding: 3 }}>
+                    {invoiceDetails.length > 0 ? (
+                        <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
+                            <Table stickyHeader>
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                                        <TableCell><strong>Booking ID</strong></TableCell>
+                                        <TableCell><strong>Payment Status</strong></TableCell>
+                                        <TableCell><strong>Teacher</strong></TableCell>
+                                        <TableCell><strong>Client</strong></TableCell>
+                                        <TableCell><strong>Invoice</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {invoiceDetails.map((row, index) => (
+                                        <TableRow key={index} sx={{ '&:nth-of-type(even)': { backgroundColor: '#fafafa' } }}>
+                                            <TableCell>{row.booking_id}</TableCell>
+                                            <TableCell>{row.payment_status}</TableCell>
+                                            <TableCell>
+                                                {(() => {
+                                                    const teacher = teachers?.find((t) => Number(t.id) === Number(row.teacher_id));
+                                                    return teacher ? `${teacher.first_name} ${teacher.last_name}` : "N/A";
+                                                })()}
+                                            </TableCell>
+                                            <TableCell> {(() => {
+                                                const teacher = teachers?.find((t) => Number(t.id) === Number(row.teacher_id));
+                                                return teacher ? `${teacher.first_name} ${teacher.last_name}` : "N/A";
+                                            })()}</TableCell>
                                             <TableCell>
                                                 <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    size="small"
-                                                    onClick={() => getInvoice(row.booking_id)}
+                                                    sx={{ backgroundColor: "#2C8E71", color: "white", '&:hover': { backgroundColor: "#e0e0e0" }, ml: 2 }}
+                                                    onClick={async () => {
+                                                        try {
+                                                            const data = await getSessionInvoice(row.id);
+                                                            window.open(data.data, '_blank');
+
+                                                        } catch (error) {
+                                                            console.log(error)
+                                                            toast.error('Error downloading invoice');
+                                                        }
+                                                    }}
                                                 >
                                                     Download
                                                 </Button>
@@ -247,7 +358,7 @@ export function ClientInvoice() {
                         </TableContainer>
                     ) : (
                         <Typography variant="h6" align="center" sx={{ color: 'gray', padding: 2 }}>
-                            No booking details available.
+                            No Session details available.
                         </Typography>
                     )}
                 </DialogContent>

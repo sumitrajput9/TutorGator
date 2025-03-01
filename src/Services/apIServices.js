@@ -315,9 +315,39 @@ export const getInvoiceData = async (searchQuery) => {
   }
 };
 
+export const getSessionInvoiceData = async (searchQuery) => {
+  try {
+    const response = await axios.get(`${apiBaseUrl}/booking/${searchQuery}/sessions`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching invoice data:', error);
+    throw error;
+  }
+};
+
 export const getInvoice = async (bookingId) => {
   try {
     const response = await axios.post(`${apiBaseUrl}/get_invoice/${bookingId}`, {}, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error downloading invoice:', error);
+    throw error;
+  }
+};
+
+export const getSessionInvoice = async (id) => {
+  try {
+    const response = await axios.post(`${apiBaseUrl}/get_session_invoice/${id}`, {}, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }

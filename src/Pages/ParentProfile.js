@@ -117,7 +117,7 @@ export default function ParentProfile() {
 
                 {clientData && clientData.id && (
                     <div className="my-4 flex flex-col gap-y-6 rounded-md border-[1px] border-richblack-700 bg-[#2C8E71] p-8 px-12">
-                        <h2 className="text-lg font-bold mb-4">Client Details</h2>
+                        <h2 className="text-lg text-white font-bold mb-4">Client Details</h2>
                         <form className="">
                             <div className="flex flex-col gap-5 lg:flex-row">
                                 <div className="flex flex-col gap-2 lg:w-[100%]">
